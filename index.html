@@ -16,6 +16,7 @@
 			<input id="position" type="range" min="0" max="329.83989302500237" value="187">
 		</p>
 	</div>
+	<div id="status"></div>
 	<script>
     var baseURL = "sounds";
 	// create the player object using a file input by id or DOM Element
@@ -24,13 +25,14 @@
 	player.onload = function(song){
 		player.play();
 		var pos= document.getElementById("position");
-		pos.setAttribute("max",song.duration);
+		pos.setAttribute("max", song.duration);
 	}
 	// the tick event is triggered in every position change
 	player.ontick=function(song,position){
 		var pos= document.getElementById("position");
 		pos.value=position;
 		document.title=position
+		//document.querySelector('#status').innerHTML = JSON.stringify(song);
 	}
 	
 
