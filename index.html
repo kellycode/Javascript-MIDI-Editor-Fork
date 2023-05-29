@@ -1,0 +1,44 @@
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<title>Javascript MIDI Player</title>
+	<!--
+	<script src='https://surikov.github.io/webaudiofont/npm/dist/WebAudioFontPlayer.js'></script>
+	-->
+	<script src="lib/WebAudioFontPlayer.js"></script>
+    <script src="lib/MIDIFile.js"></script>
+    <script src="lib/MIDIPlayer.js"></script>
+</head>
+<body>
+	<h2>Javascript MIDI Player</h2>
+	<div id="cntls">
+		<p>
+			<input type="file" id="filesinput" name="filesarr[]" accept=".mid,.midi,.kar">
+			<button type="button" onclick="player.play()">Play</button>
+			<button type="button" onclick="player.pause()">Pause</button>
+			<button type="button" onclick="player.stop()">Stop</button>
+			<input id="position" type="range" min="0" max="329.83989302500237" value="187">
+		</p>
+	</div>
+	<script>
+    var baseURL = "sounds";
+	// create the player object using a file input by id or DOM Element
+	var player = new MIDIPlayer('filesinput',null,baseURL);
+	// register the onload function to start playing
+	player.onload = function(song){
+		player.play();
+		var pos= document.getElementById("position");
+		pos.setAttribute("max",song.duration);
+	}
+	// the tick event is triggered in every position change
+	player.ontick=function(song,position){
+		var pos= document.getElementById("position");
+		pos.value=position;
+		document.title=position
+	}
+	
+
+        
+	</script>
+
+
+</body></html>
