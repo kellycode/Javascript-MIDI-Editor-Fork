@@ -34,6 +34,10 @@
 		document.title=position
 		//document.querySelector('#status').innerHTML = JSON.stringify(song);
 	}
+	player.monitor = function(audioContext, input, instr, when, n, duration, v)
+	{
+		document.querySelector('#status').innerHTML = JSON.stringify({when:when, n:n, duration:duration, v:v});
+	}
 	
 
         
