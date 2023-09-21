@@ -1,6 +1,9 @@
-<html><head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-	<title>Javascript MIDI Player</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Javascript MIDI Player</title>
 	<script src="lib/WebAudioFontPlayer.js"></script>
     <script src="lib/MIDIFile.js"></script>
     <script src="lib/MIDIPlayer.js"></script>
@@ -16,28 +19,49 @@
 			<input id="position" type="range" min="0" max="329.83989302500237" value="187">
 		</p>
 	</div>
-	<div id="status"></div>
+	<div id="status1"></div>
+	<div id="status2"></div>
 	<script>
+	var pos = document.getElementById("position");
     var baseURL = "sounds";
 	// create the player object using a file input by id or DOM Element
 	var player = new MIDIPlayer('filesinput',null,baseURL);
 	// register the onload function to start playing
 	player.onload = function(song){
 		player.play();
-		var pos= document.getElementById("position");
 		pos.setAttribute("max", song.duration);
 	}
 	// the tick event is triggered in every position change
-	player.ontick=function(song,position){
-		var pos= document.getElementById("position");
+	player.ontick=function(song, position){
 		pos.value=position;
-		document.title=position
+		//document.title=position
 		//document.querySelector('#status').innerHTML = JSON.stringify(song);
 	}
-	player.monitor = function(audioContext, input, instr, when, n, duration, v)
+	
+	
+	player.monitor = function(type, audioContext, input, instr, when, n, duration, v, channel)
 	{
-		document.querySelector('#status').innerHTML = JSON.stringify({when:when, n:n, duration:duration, v:v});
+		instr = filterInstr(instr);
+		//document.querySelector('#status').innerHTML = JSON.stringify({input:input, when:when, n:n, duration:duration, v:v, i:i});
+		if(type == 'beat')
+		document.querySelector('#status1').innerHTML = JSON.stringify({n});
+		else if(type == 'note')
+		document.querySelector('#status2').innerHTML = JSON.stringify({n});
 	}
+	
+	function filterInstr(instr)
+	{
+		if(typeof instr.zones != 'undefined')
+		{
+			for(let i = 0; i<instr.zones.length; i++) //NOSONAR
+			{
+				instr.zones[i].file = '';
+				instr.zones[i].sample = '';
+			}
+		}
+		return instr;
+	}
+	
 	
 
         
