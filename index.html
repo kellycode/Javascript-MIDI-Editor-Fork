@@ -4,6 +4,7 @@
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Javascript MIDI Player</title>
+	<script src="lib/opensheetmusicdisplay.min.js"></script>
 	<script src="lib/WebAudioFontPlayer.js"></script>
     <script src="lib/MIDIFile.js"></script>
     <script src="lib/MIDIPlayer.js"></script>
@@ -19,34 +20,93 @@
 			<input id="position" type="range" min="0" max="329.83989302500237" value="187">
 		</p>
 	</div>
+	<div id="status0"></div>
 	<div id="status1"></div>
 	<div id="status2"></div>
+	<div id="osmdCanvas"></div>
 	<script>
 	var pos = document.getElementById("position");
     var baseURL = "sounds";
 	// create the player object using a file input by id or DOM Element
 	var player = new MIDIPlayer('filesinput',null,baseURL);
+
+
+	player.callbackSelectUrl = function(arrayBuffer, pathMidi, pathXml)
+	{
+		console.log('callbackSelectUrl')
+		if(typeof pathXml == 'undefined')
+        {
+            let arr = pathMidi.split('.');
+            if(arr[arr.length - 1].toLowerCase() == 'mid')
+            {
+                arr[arr.length - 1] = 'xml';
+            }
+            pathXml = arr.join('.');
+        }
+
+		let osmd = new opensheetmusicdisplay.OpenSheetMusicDisplay("osmdCanvas", {
+          // set options here
+          backend: "svg",
+          drawFromMeasureNumber: 1,
+          drawUpToMeasureNumber: Number.MAX_SAFE_INTEGER // draw all measures, up to the end of the sample
+        });
+
+
+		let xmlHttpRequest = new XMLHttpRequest();
+		console.log(pathXml)
+        xmlHttpRequest.open("GET", pathXml, true);
+        //xmlHttpRequest.responseType = "arraybuffer";
+		//xmlHttpRequest.responseType = "text";
+        xmlHttpRequest.onload = function (e) {
+            let text = xmlHttpRequest.responseText;
+			//console.log(text)
+
+			osmd
+          .load(text)
+          .then(
+            function() {
+              window.osmd = osmd; // give access to osmd object in Browser console, e.g. for osmd.setOptions()
+              //console.log("e.target.result: " + e.target.result);
+              osmd.render();
+              osmd.cursor.show(); // this would show the cursor on the first note
+              //osmd.cursor.next(); // advance the cursor one note
+              
+            }
+          );
+            
+        };
+        xmlHttpRequest.send(null);
+
+
+        
+	}
+
+
+
 	// register the onload function to start playing
 	player.onload = function(song){
-		player.play();
+		//player.play();
 		pos.setAttribute("max", song.duration);
 	}
 	// the tick event is triggered in every position change
 	player.ontick=function(song, position){
 		pos.value=position;
-		//document.title=position
-		//document.querySelector('#status').innerHTML = JSON.stringify(song);
+		document.title = [osmd.cursor.iterator.currentTimeStamp.realValue, position]
+		if(osmd.cursor.iterator.currentTimeStamp.realValue < position-1)
+		{
+			osmd.cursor.next();
+		}
 	}
 	
 	
 	player.monitor = function(type, audioContext, input, instr, when, n, duration, v, channel)
 	{
-		instr = filterInstr(instr);
-		//document.querySelector('#status').innerHTML = JSON.stringify({input:input, when:when, n:n, duration:duration, v:v, i:i});
+	/*
 		if(type == 'beat')
 		document.querySelector('#status1').innerHTML = JSON.stringify({n});
 		else if(type == 'note')
 		document.querySelector('#status2').innerHTML = JSON.stringify({n});
+		*/
 	}
 	
 	function filterInstr(instr)
@@ -63,6 +123,7 @@
 	}
 	
 	
+	player.handleUrl('sherina.mid');
 
         
 	</script>
